@@ -251,7 +251,11 @@
 
             if (gridCell.innerHTML) {
                 try {
-                    return parseInt(gridCell.innerHTML) || '';
+                    const htmlContent = parseInt(gridCell.innerHTML);
+                    if (htmlContent > 0) {
+                        gridCell.innerHTML = ''
+                    }
+                    return htmlContent || '';
                 } catch (error) {
                     return '';
                 }
