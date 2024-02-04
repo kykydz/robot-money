@@ -55,19 +55,44 @@
         const STEP_SIZE = 50;
         let gameContainer;
         let facingDirection = '';
+        let lastPosition = { x: 0, y: 0 };
 
         const MIN_MONEY_DROP = 500;
         const MAX_MONEY_DROP = 2000;
         const STEP_MONEY_DROP = 500;
         const DEFAULT_DROP_RATE = 0.5;
+        let DEFAULT_INTEREST_RATE = generateInterestRate();
+        console.log('DEFAULT_INTEREST_RATE : ', DEFAULT_INTEREST_RATE);
+        let TOTAL_MONEY_AVAILABLE = 0;
+        let TOTAL_MONEY = 0;
+        let TOTAL_MONEY_FOUND = 0;
+        let TOTAL_EARNINGS = 0;
 
         let MAX_STEP_DEFAULT = 15;
+        let STEPS = 0;
 
         function initializeGame() {
+            resetVariable();
             gridSize = parseInt(document.getElementById('matrix-size').value) || gridSize;
             createMatrix();
+            console.log(TOTAL_MONEY, TOTAL_MONEY_AVAILABLE);
             placeRobot();
             document.addEventListener('keydown', moveRobot);
+        }
+
+        function resetVariable() {
+            TOTAL_MONEY_AVAILABLE = 0;
+            TOTAL_MONEY_FOUND = 0;
+            TOTAL_EARNINGS = 0;
+            TOTAL_MONEY = 0;
+            STEPS = 0;
+        }
+
+        function generateInterestRate() {
+            const min = 5;
+            const max = 25;
+            const interestRate = (Math.floor(Math.random() * (25 - 2 + 1)) + 2) / 100;
+            return interestRate.toFixed(2);
         }
 
         function createMatrix() {
@@ -80,7 +105,8 @@
 
                 // avoid 0,0 to drop money
                 if (i > 0) {
-                    cell.innerHTML = randomMoneyDropInitialize()
+                    const money = randomMoneyDropInitialize().toString();
+                    cell.innerHTML = money;
                 }
 
                 gameContainer.appendChild(cell);
@@ -93,10 +119,20 @@
             for (let i = 0; i <= MAX_MONEY_DROP; i += STEP_MONEY_DROP) {
                 moneyArray.push(i)
             }
-            const idx = (Math.floor(Math.random() * moneyArray.length)).toString();
+            const idx = (Math.floor(Math.random() * moneyArray.length));
             const money = moneyArray[idx] == 0 ? '' : moneyArray[idx];
 
-            return Math.random() < dropRate ? money : '';
+            const dropped = Math.random() < dropRate ? money : '';
+            initTotalMoney(dropped);
+
+            return dropped;
+        }
+
+        function initTotalMoney(dropped) {
+            if (parseInt(dropped) > 0) {
+                TOTAL_MONEY_AVAILABLE++;
+                TOTAL_MONEY += parseInt(dropped);
+            }
         }
 
         function placeRobot() {
@@ -115,6 +151,9 @@
         }
 
         function moveRobot(event) {
+            if (STEPS == MAX_STEP_DEFAULT) {
+                return;
+            }
             const robot = document.getElementById('robot');
 
             let x = 0;
@@ -144,15 +183,32 @@
 
             const newX = clamp(currentMatrix.m41 + x, 0, (gridSize - 1) * STEP_SIZE);
             const newY = clamp(currentMatrix.m42 + y, 0, (gridSize - 1) * STEP_SIZE);
-
             robot.style.transform = `translate(${newX}px, ${newY}px)`;
-            lastPosition = { x: newX, y: newY };
 
             console.log(`Last Position: x=${lastPosition.x}, y=${lastPosition.y}`);
             console.log(`Facing Direction: ${facingDirection}`);
+            console.log(`Step taken : ${STEPS} / ${MAX_STEP_DEFAULT}`);
 
             const gridContent = getGridContent(newX, newY);
-            console.log(`Grid Content: ${gridContent}`);
+
+            // negate count step if it hits the cliff
+            if (lastPosition && !(lastPosition.x == newX && lastPosition.y == newY)) {
+                // count as step
+                STEPS++;
+                countMoney(gridContent);
+            }
+
+            lastPosition = { x: newX, y: newY };
+        }
+
+        function countMoney(gridContent) {
+            if (gridContent && parseInt(gridContent) > 0) {
+                const moneyValue = parseInt(gridContent);
+                TOTAL_EARNINGS = TOTAL_EARNINGS + moneyValue;
+                TOTAL_MONEY_FOUND++;
+            }
+            TOTAL_EARNINGS = TOTAL_EARNINGS + (TOTAL_EARNINGS * DEFAULT_INTEREST_RATE);
+            console.log(TOTAL_EARNINGS);
         }
 
         // to define alllowed range
