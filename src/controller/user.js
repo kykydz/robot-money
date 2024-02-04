@@ -1,10 +1,8 @@
-'use strict';
-
 const { Router } = require('express');
 
-class GameMechanicController {
-    constructor(gameMechanicService) {
-        this.gameMechanicService = gameMechanicService;
+class UserController {
+    constructor(userService) {
+        this.userService = userService;
 
         this.router = Router();
         this.router.post('/', this.login.bind(this));
@@ -15,4 +13,4 @@ class GameMechanicController {
     }
 }
 
-module.exports = GameMechanicController;
+module.exports = UserController;
