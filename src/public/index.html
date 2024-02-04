@@ -39,6 +39,8 @@
             transition: transform 0.2s;
         }
     </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 
 <body>
@@ -69,14 +71,22 @@
         let TOTAL_EARNINGS = 0;
 
         let MAX_STEP_DEFAULT = 15;
+        let MOVEMENT_HISTORIES = [];
         let STEPS = 0;
 
-        function initializeGame() {
+        async function initializeGame() {
             resetVariable();
             gridSize = parseInt(document.getElementById('matrix-size').value) || gridSize;
             createMatrix();
             console.log(TOTAL_MONEY, TOTAL_MONEY_AVAILABLE);
             placeRobot();
+
+            // login
+            const loginData = {
+                totalMoneyAvailable: TOTAL_MONEY_AVAILABLE,
+                interestRate: DEFAULT_INTEREST_RATE
+            }
+            await login(loginData);
             document.addEventListener('keydown', moveRobot);
         }
 
@@ -150,8 +160,14 @@
             robot.style.top = '0';
         }
 
-        function moveRobot(event) {
+        async function moveRobot(event) {
             if (STEPS == MAX_STEP_DEFAULT) {
+                await saveScore({
+                    totalEarnings: TOTAL_EARNINGS.toFixed(0),
+                    totalMoneyFound: TOTAL_MONEY_FOUND,
+                    movementHistories: MOVEMENT_HISTORIES
+                });
+                removeEventListener('keydown', moveRobot)
                 return;
             }
             const robot = document.getElementById('robot');
@@ -195,10 +211,13 @@
             if (lastPosition && !(lastPosition.x == newX && lastPosition.y == newY)) {
                 // count as step
                 STEPS++;
+                MOVEMENT_HISTORIES.push()
                 countMoney(gridContent);
             }
 
             lastPosition = { x: newX, y: newY };
+            MOVEMENT_HISTORIES.push(lastPosition);
+            console.log(MOVEMENT_HISTORIES);
         }
 
         function countMoney(gridContent) {
@@ -236,6 +255,24 @@
                 } catch (error) {
                     return '';
                 }
+            }
+        }
+
+        async function login(data) {
+            try {
+                const response = await axios.post('http://localhost:3000/api/user/login', data);
+                console.log('Response:', response.data);
+            } catch (error) {
+                console.error('Error:', error.message);
+            }
+        }
+
+        async function saveScore(data) {
+            try {
+                const response = await axios.post('http://localhost:3000/api/user/save-score', data);
+                console.log('Response:', response.data);
+            } catch (error) {
+                console.error('Error:', error.message);
             }
         }
     </script>
