@@ -1,8 +1,16 @@
 const fs = require('fs');
+const { SERVICE_NAME } = require('../../config');
 
 class UserModelsAbstraction {
     constructor (jsonPath) {
         this.db = jsonPath;
+    }
+
+    _base(data) {
+        return {
+            service: SERVICE_NAME,
+            users: data || []
+        }
     }
 
     initDB() {
@@ -16,18 +24,18 @@ class UserModelsAbstraction {
             }
         }
 
-        return fs.writeFileSync(this.db, JSON.stringify('[]'));
+        return fs.writeFileSync(this.db, JSON.stringify(this._base()));
     }
 
     readAll() {
         // return array of user profile detial
-        return fs.readFileSync(this.db, {
+        return JSON.parse(fs.readFileSync(this.db, {
             encoding: 'utf-8'
-        });
+        })).users;
     }
 
     writeAll(data) {
-        return fs.writeFileSync(this.db, JSON.stringify(data));
+        return fs.writeFileSync(this.db, JSON.stringify(this._base(data)));
     }
 }
 
