@@ -26,6 +26,9 @@
             height: 50px;
             border: 1px solid white;
             box-sizing: border-box;
+            justify-content: center;
+            align-items: center;
+            display: flex;
         }
 
         #robot {
@@ -49,13 +52,22 @@
 
     <script>
         let gridSize = 5;
+        const STEP_SIZE = 50;
         let gameContainer;
         let facingDirection = '';
 
+        const MIN_MONEY_DROP = 500;
+        const MAX_MONEY_DROP = 2000;
+        const STEP_MONEY_DROP = 500;
+        const DEFAULT_DROP_RATE = 0.5;
+
+        let MAX_STEP_DEFAULT = 15;
+
         function initializeGame() {
-            gridSize = parseInt(document.getElementById('matrix-size').value) || 5;
+            gridSize = parseInt(document.getElementById('matrix-size').value) || gridSize;
             createMatrix();
             placeRobot();
+            document.addEventListener('keydown', moveRobot);
         }
 
         function createMatrix() {
@@ -65,8 +77,26 @@
             for (let i = 0; i < gridSize * gridSize; i++) {
                 const cell = document.createElement('div');
                 cell.className = 'cell';
+
+                // avoid 0,0 to drop money
+                if (i > 0) {
+                    cell.innerHTML = randomMoneyDropInitialize()
+                }
+
                 gameContainer.appendChild(cell);
             }
+        }
+
+        function randomMoneyDropInitialize() {
+            const dropRate = DEFAULT_DROP_RATE * 0.5;
+            let moneyArray = [];
+            for (let i = 0; i <= MAX_MONEY_DROP; i += STEP_MONEY_DROP) {
+                moneyArray.push(i)
+            }
+            const idx = (Math.floor(Math.random() * moneyArray.length)).toString();
+            const money = moneyArray[idx] == 0 ? '' : moneyArray[idx];
+
+            return Math.random() < dropRate ? money : '';
         }
 
         function placeRobot() {
@@ -82,6 +112,75 @@
             robot.style.transform = `translate(${initialPosition}px, ${initialPosition}px)`;
             robot.style.left = '0';
             robot.style.top = '0';
+        }
+
+        function moveRobot(event) {
+            const robot = document.getElementById('robot');
+
+            let x = 0;
+            let y = 0;
+
+            switch (event.key) {
+                case 'ArrowUp':
+                    y -= STEP_SIZE;
+                    facingDirection = 'UP';
+                    break;
+                case 'ArrowDown':
+                    y += STEP_SIZE;
+                    facingDirection = 'DOWN';
+                    break;
+                case 'ArrowLeft':
+                    x -= STEP_SIZE;
+                    facingDirection = 'LEFT';
+                    break;
+                case 'ArrowRight':
+                    x += STEP_SIZE;
+                    facingDirection = 'RIGHT';
+                    break;
+            }
+
+            const currentTransform = window.getComputedStyle(robot).getPropertyValue('transform');
+            const currentMatrix = new DOMMatrix(currentTransform);
+
+            const newX = clamp(currentMatrix.m41 + x, 0, (gridSize - 1) * STEP_SIZE);
+            const newY = clamp(currentMatrix.m42 + y, 0, (gridSize - 1) * STEP_SIZE);
+
+            robot.style.transform = `translate(${newX}px, ${newY}px)`;
+            lastPosition = { x: newX, y: newY };
+
+            console.log(`Last Position: x=${lastPosition.x}, y=${lastPosition.y}`);
+            console.log(`Facing Direction: ${facingDirection}`);
+
+            const gridContent = getGridContent(newX, newY);
+            console.log(`Grid Content: ${gridContent}`);
+        }
+
+        // to define alllowed range
+        function clamp(value, min, max) {
+            const newValue = Math.min(Math.max(value, min), max);
+
+            const steps = [];
+            for (let i = 0; i <= max; i += STEP_SIZE) {
+                steps.push(i);
+            }
+            const closestStep = steps.reduce((prev, curr) => Math.abs(curr - newValue) < Math.abs(prev - newValue) ? curr : prev);
+            return closestStep
+        }
+
+        function getGridContent(x, y) {
+            const gameContainer = document.getElementById('game-container');
+            const cellSize = 50;
+            const gridX = Math.floor(x / cellSize);
+            const gridY = Math.floor(y / cellSize);
+            const gridCell = gameContainer.children[gridY * gridSize + gridX];
+
+            if (gridCell.innerHTML) {
+                try {
+                    return parseInt(gridCell.innerHTML) || '';
+                } catch (error) {
+                    return '';
+                }
+            }
         }
     </script>
 </body>
