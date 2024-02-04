@@ -49,6 +49,13 @@
         <input type="number" id="matrix-size" min="1" value="5">
         <button onclick="initializeGame()">Start Game</button>
     </section>
+    <section>
+        <label id="totalEarnings">Total Earnings : </label>
+        <br>
+        <label id="moneyCollected">Total Money Collected : </label>
+        <br>
+        <label id="stepLeft">Step Left : </label>
+    </section>
 
     <div id="game-container"></div>
 
@@ -211,8 +218,9 @@
             if (lastPosition && !(lastPosition.x == newX && lastPosition.y == newY)) {
                 // count as step
                 STEPS++;
-                MOVEMENT_HISTORIES.push()
+                MOVEMENT_HISTORIES.push();
                 countMoney(gridContent);
+                displayScore();
             }
 
             lastPosition = { x: newX, y: newY };
@@ -228,6 +236,12 @@
             }
             TOTAL_EARNINGS = TOTAL_EARNINGS + (TOTAL_EARNINGS * DEFAULT_INTEREST_RATE);
             console.log(TOTAL_EARNINGS);
+        }
+
+        function displayScore() {
+            document.getElementById('totalEarnings').innerHTML = 'Total Earnings : ' + TOTAL_EARNINGS.toFixed(0).toString();
+            document.getElementById('moneyCollected').innerHTML = 'Total Money Collected : ' + TOTAL_MONEY_FOUND.toString() + '/' + TOTAL_MONEY_AVAILABLE;
+            document.getElementById('stepLeft').innerHTML = 'Step Left : ' + STEPS + '/' + MAX_STEP_DEFAULT;
         }
 
         // to define alllowed range
