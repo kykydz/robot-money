@@ -36,7 +36,7 @@
             width: 50px;
             height: 50px;
             background-color: red;
-            transition: transform 0.2s;
+            transition: transform 0.01s;
         }
     </style>
 
@@ -167,7 +167,7 @@
                     totalMoneyFound: TOTAL_MONEY_FOUND,
                     movementHistories: MOVEMENT_HISTORIES
                 });
-                removeEventListener('keydown', moveRobot)
+                document.removeEventListener('keydown', moveRobot)
                 return;
             }
             const robot = document.getElementById('robot');
