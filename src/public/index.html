@@ -116,6 +116,8 @@
             gameContainer = document.getElementById('game-container');
             gameContainer.innerHTML = '';
 
+            gameContainer.style.gridTemplateColumns = `repeat(${gridSize}, 50px)`;
+            gameContainer.style.gridTemplateRows = `repeat(${gridSize}, 50px)`;
             for (let i = 0; i < gridSize * gridSize; i++) {
                 const cell = document.createElement('div');
                 cell.className = 'cell';
