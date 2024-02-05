@@ -8,6 +8,7 @@ const UserModelsAbstraction = require('./models/json/user');
 const { DB } = require('./config');
 const UserRepository = require('./repository/user');
 const UserService = require('./service/user');
+const requestLogger = require('./middleware/logger');
 
 const setupRoutes = async (app) => {
     // init DB (using json file)
@@ -21,15 +22,16 @@ const setupRoutes = async (app) => {
     const userController = new UserController(userService);
 
     app.use(express.static('public'));
+    app.use(requestLogger);
     app.get('/', (_, res) => {
         res.sendFile(__dirname + '/public/index.html');
     });
 
     app.use('/api/user', session, userController.router);
 
-    // app.use('*', (req, res) => {
-    //     res.status(401).send('Unauthorized');
-    // });
+    app.use('*', (req, res) => {
+        res.status(401).send('Unauthorized');
+    });
 }
 
 module.exports.createApp = async (app) => {
