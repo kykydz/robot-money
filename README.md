@@ -1,6 +1,5 @@
 ## Robot Money Collector
 <!-- > Author: Rizky Heri S -->
-<!-- Test Reference https://komunalgroup.notion.site/Mid-Level-Engineer-0d7a32d39d4c46008f7310f6f697b05b -->
 
 ### Requirement
 Below are author environment to run the script:
